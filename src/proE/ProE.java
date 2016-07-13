@@ -14,21 +14,44 @@ public class ProE {
 	private JButton modify = new JButton("Modify");
 	JFileChooser chooser = new JFileChooser(".");
 	
-	public void clearXML(File xmlFile){
+	private Document document;
+	private SAXReader saxReader;
+	
+	public Document clearXML(File xmlFile){
 		try {
 			SAXReader saxReader = new SAXReader();
-			Document document = saxReader.read(xmlFile);
+			document = saxReader.read(xmlFile);
 			List list = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
 			Iterator iter = list.iterator();
 			while(iter.hasNext()){
 				Element element =(Element) iter.next();
 				if(element.attribute("Type").getValue().equals("Sym")){
 					System.out.println(element.attribute("Name").getValue());
+					Element symEle = element.getParent().element("Comments").element("Comment");	
+					String symLength = symEle.attribute("Comment").getValue().split("\\s")[0];
+					String symView = element.attribute("ViewFolio").getValue();
+					String symTol = symEle.attribute("Comment").getValue().split("\\s")[1].split("-")[1];
+					List simList = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
+					Iterator simIter = simList.iterator();
+					while(simIter.hasNext()){
+						Element lengEle = (Element) simIter.next();
+						if(lengEle.attribute("Type").getValue().equals("Sim")){
+						String length = lengEle.attribute("Nominal").getValue();
+						String lView = lengEle.attribute("ViewFolio").getValue();
+						String lTol = lengEle.attribute("TolUpper").getValue();
+						String rept = lengEle.attribute("Repetition").getValue();
+						if(symLength.equals(length) && symView.equals(lView) && symTol.equals(lTol)){
+							element.attribute("Repetition").setValue(rept);
+						}
+						}
+					}
 				}
 			}
 		} catch (DocumentException e) {
 			e.printStackTrace();
 		}
+		
+		return document;
 		
 	}
 	
@@ -113,8 +136,10 @@ public class ProE {
 	public static void main(String[] args) {
 		ProE proE = new ProE();
 		File xmlFile = new File("./xmlFile/NVE5471502.xml");
+		File newXMLFile = new File("./xmlFile/newXML.xml");
 		
 		proE.clearXML(xmlFile);
+		proE.saveDocument(document, newXMLFile);
 
 	}
 
