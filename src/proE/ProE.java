@@ -15,7 +15,8 @@ public class ProE {
 	JFileChooser chooser = new JFileChooser(".");
 	
 	private Document document;
-	private SAXReader saxReader;
+	private SAXReader saxReader = new SAXReader();
+	private List<File> xmlFileList = new ArrayList<>();
 	
 	public Document clearXML(File xmlFile){
 		try {
@@ -47,6 +48,14 @@ public class ProE {
 					}
 				}
 			}
+			/*String[] fileList = xmlFile.getAbsolutePath().split("\\."); 
+			for(String str : fileList){
+				System.out.println(str);
+			}
+			String newFile = fileList[0] + "-new." + fileList[1];
+			//System.out.println(newFile);
+			File file = new File(newFile);
+			saveDocument(file);*/
 		} catch (DocumentException e) {
 			e.printStackTrace();
 		}
@@ -55,7 +64,31 @@ public class ProE {
 		
 	}
 	
-	public void init(){
+	public void init(String preFile){
+		File xmlPath = new File(preFile);
+		if(!xmlPath.exists()){
+			try {
+				xmlPath.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		if(xmlPath.isDirectory()){
+			for(File file : xmlPath.listFiles()){
+				//System.out.println(file.getAbsolutePath());
+				String path = file.getAbsolutePath();
+				int index = path.lastIndexOf(".");
+				String fileType = path.substring(index + 1);
+				//System.out.println(fileType);
+				if(fileType.equalsIgnoreCase("xml")){
+					xmlFileList.add(file);
+				}
+			}
+		}else {
+			System.out.println("You need select a file, not a path");
+		}
+		
+		/*
 		filePath.setEditable(false);
 		JPanel jp = new JPanel();
 		jp.add(filePath);
@@ -77,12 +110,11 @@ public class ProE {
 		jf.setSize(600, 100);
 		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jf.setVisible(true);
+		*/
 	}
 	
-	public void readXML(File xmlFile){
-		try{
-			SAXReader saxReader = new SAXReader();
-			Document document = saxReader.read(xmlFile);
+	public Document updateRept(File xmlFile){
+//			document = saxReader.read(xmlFile);
 			List list = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
 			for(int i = list.size() - 1; i >=0; i--){
 				Element element = (Element) list.get(i);
@@ -97,9 +129,10 @@ public class ProE {
 						Element cloneE = (Element) element.getParent().clone();
 						String newName = name.getValue() + "-" + j;
 						cloneE.element("TolerancedDimInfos").attribute("Name").setValue(newName);
+						cloneE.element("TolerancedDimInfos").attribute("Repetition").setValue("0");
 						parent.elements().add(i + 1, cloneE);
 					}
-					parent.elements().remove(i);
+//					parent.elements().remove(i);
 				}
 				
 			//String newFile = fileList[0] + "-new." + fileList[1];
@@ -107,22 +140,22 @@ public class ProE {
 			//File file = new File("newFile");
 			//saveDocument(document, file);
 			}
-			System.out.println(xmlFile.getAbsolutePath());
+			//System.out.println(xmlFile.getAbsolutePath());
 			String[] fileList = xmlFile.getAbsolutePath().split("\\."); 
 			for(String str : fileList){
 				System.out.println(str);
 			}
 			String newFile = fileList[0] + "-new." + fileList[1];
-			System.out.println(newFile);
+			//System.out.println(newFile);
 			File file = new File(newFile);
-			saveDocument(document, file);
-		}catch (DocumentException e){
-			System.out.println(e);
-		}
+			saveDocument(file);
+		
+		return document;
 		
 	}
+	
 
-	public void saveDocument(Document document, File outputXml){
+	public void saveDocument(File outputXml){
 		try{
 			OutputFormat format = OutputFormat.createPrettyPrint();
 			XMLWriter output = new XMLWriter(new FileWriter(outputXml), format);
@@ -133,13 +166,19 @@ public class ProE {
 		}
 	}
 	
+	public void test(){
+		init("C:/Users/Spock/Desktop/XML/se");
+		for(File file : xmlFileList){
+			clearXML(file);
+			updateRept(file);
+		}
+	}
+	
 	public static void main(String[] args) {
 		ProE proE = new ProE();
 		File xmlFile = new File("./xmlFile/NVE5471502.xml");
 		File newXMLFile = new File("./xmlFile/newXML.xml");
-		
-		proE.clearXML(xmlFile);
-		proE.saveDocument(document, newXMLFile);
+		proE.test();
 
 	}
 
