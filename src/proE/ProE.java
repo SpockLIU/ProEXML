@@ -4,6 +4,9 @@ import org.dom4j.*;
 import org.dom4j.io.*;
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.swing.*;
 
 public class ProE {
@@ -60,12 +63,10 @@ public class ProE {
 		}
 		if(xmlPath.isDirectory()){
 			for(File file : xmlPath.listFiles()){
-				//System.out.println(file.getAbsolutePath());
-				String path = file.getAbsolutePath();
-				int index = path.lastIndexOf(".");
-				String fileType = path.substring(index + 1);
-				//System.out.println(fileType);
-				if(fileType.equalsIgnoreCase("xml")){
+				String name = file.getName();
+				Pattern pattern = Pattern.compile("[a-z]{3}\\d{7}\\.xml", Pattern.CASE_INSENSITIVE);
+				Matcher matcher = pattern.matcher(name);
+				if(matcher.matches()){
 					xmlFileList.add(file);
 				}
 			}
@@ -102,7 +103,7 @@ public class ProE {
 		jp.add(filePath);
 		jp.add(upload);
 		upload.addActionListener(event -> {
-			chooser.setCurrentDirectory(new File("C:/Users/Spock/Desktop/XML/SE"));
+			chooser.setCurrentDirectory(new File(path));
 			int result = chooser.showDialog(jf, "OK");
 			if(result == JFileChooser.APPROVE_OPTION){
 				filePath.setText(chooser.getSelectedFile().getPath());
@@ -116,6 +117,25 @@ public class ProE {
 					createNewXML(file);
 				}
 			}
+		});
+		jp.add(setDefault);
+		setDefault.addActionListener(event -> {
+			if(filePath.getText().trim().length() > 0){
+				System.out.println(filePath.getText());
+				props.setProperty("path", filePath.getText());
+				try {
+					OutputStream os = new FileOutputStream("./xml.ini");
+					props.store(os, null);
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+			
 		});
 		jf.add(jp);
 		jf.setSize(600, 100);
