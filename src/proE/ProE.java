@@ -25,7 +25,7 @@ public class ProE {
 			while(iter.hasNext()){
 				Element element =(Element) iter.next();
 				if(element.attribute("Type").getValue().equals("Sym")){
-					System.out.println(element.attribute("Name").getValue());
+//					System.out.println(element.attribute("Name").getValue());
 					Element symEle = element.getParent().element("Comments").element("Comment");	
 					String symLength = symEle.attribute("Comment").getValue().split("\\s")[0];
 					String symView = element.attribute("ViewFolio").getValue();
@@ -84,14 +84,6 @@ public class ProE {
 	
 	public void init(){
 		
-		/*createXMLlist(preFile);
-		for(File file : xmlFileList){
-			readXML(file);
-			clearXML();
-			updateRept();
-			saveAs(file);
-		}*/
-		
 		Properties props = new Properties();
 		try {
 			props.load(new FileInputStream(".\\xml.ini"));
@@ -110,15 +102,16 @@ public class ProE {
 		jp.add(filePath);
 		jp.add(upload);
 		upload.addActionListener(event -> {
+			chooser.setCurrentDirectory(new File("C:/Users/Spock/Desktop/XML/SE"));
 			int result = chooser.showDialog(jf, "OK");
 			if(result == JFileChooser.APPROVE_OPTION){
 				filePath.setText(chooser.getSelectedFile().getPath());
-				createXMLlist(filePath.getText());
 			}
 		});
 		jp.add(modify);
 		modify.addActionListener(avt ->{
 			if(filePath.getText().trim().length() > 0){
+				createXMLlist(filePath.getText());
 				for(File file : xmlFileList){
 					createNewXML(file);
 				}
