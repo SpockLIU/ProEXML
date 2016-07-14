@@ -18,10 +18,7 @@ public class ProE {
 	private SAXReader saxReader = new SAXReader();
 	private List<File> xmlFileList = new ArrayList<>();
 	
-	public Document clearXML(File xmlFile){
-		try {
-			SAXReader saxReader = new SAXReader();
-			document = saxReader.read(xmlFile);
+	private void clearXML(){
 			List list = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
 			Iterator iter = list.iterator();
 			while(iter.hasNext()){
@@ -48,23 +45,10 @@ public class ProE {
 					}
 				}
 			}
-			/*String[] fileList = xmlFile.getAbsolutePath().split("\\."); 
-			for(String str : fileList){
-				System.out.println(str);
-			}
-			String newFile = fileList[0] + "-new." + fileList[1];
-			//System.out.println(newFile);
-			File file = new File(newFile);
-			saveDocument(file);*/
-		} catch (DocumentException e) {
-			e.printStackTrace();
-		}
-		
-		return document;
 		
 	}
 	
-	public void init(String preFile){
+	public void createXMLlist(String preFile){
 		File xmlPath = new File(preFile);
 		if(!xmlPath.exists()){
 			try {
@@ -79,13 +63,32 @@ public class ProE {
 				String path = file.getAbsolutePath();
 				int index = path.lastIndexOf(".");
 				String fileType = path.substring(index + 1);
-				//System.out.println(fileType);
+				System.out.println(fileType);
 				if(fileType.equalsIgnoreCase("xml")){
 					xmlFileList.add(file);
 				}
 			}
 		}else {
 			System.out.println("You need select a file, not a path");
+		}
+	}
+	
+	private void readXML(File xmlFile){
+		try {
+			document = saxReader.read(xmlFile);
+		} catch (DocumentException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void init(String preFile){
+		
+		createXMLlist(preFile);
+		for(File file : xmlFileList){
+			readXML(file);
+			clearXML();
+			updateRept();
+			saveAs(file);
 		}
 		
 		/*
@@ -113,8 +116,7 @@ public class ProE {
 		*/
 	}
 	
-	public Document updateRept(File xmlFile){
-//			document = saxReader.read(xmlFile);
+	private void updateRept(){
 			List list = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
 			for(int i = list.size() - 1; i >=0; i--){
 				Element element = (Element) list.get(i);
@@ -132,33 +134,25 @@ public class ProE {
 						cloneE.element("TolerancedDimInfos").attribute("Repetition").setValue("0");
 						parent.elements().add(i + 1, cloneE);
 					}
-//					parent.elements().remove(i);
+					parent.elements().remove(i);
 				}
 				
-			//String newFile = fileList[0] + "-new." + fileList[1];
-			//System.out.println(newFile);
-			//File file = new File("newFile");
-			//saveDocument(document, file);
 			}
-			//System.out.println(xmlFile.getAbsolutePath());
-			String[] fileList = xmlFile.getAbsolutePath().split("\\."); 
-			for(String str : fileList){
-				System.out.println(str);
-			}
-			String newFile = fileList[0] + "-new." + fileList[1];
-			//System.out.println(newFile);
-			File file = new File(newFile);
-			saveDocument(file);
-		
-		return document;
-		
+			
 	}
 	
+	private String newFileName(File file){
+		String fileName = file.getName();
+		String parent = file.getParent();
+		String newFileName = fileName.split("\\.")[0] + "-new." +  fileName.split("\\.")[1];
+		return (parent + "/" +newFileName);
+	}
 
-	public void saveDocument(File outputXml){
+	private void saveAs(File inputXML){
 		try{
+			File outputXML = new File(newFileName(inputXML));
 			OutputFormat format = OutputFormat.createPrettyPrint();
-			XMLWriter output = new XMLWriter(new FileWriter(outputXml), format);
+			XMLWriter output = new XMLWriter(new FileWriter(outputXML), format);
 			output.write(document);
 			output.close();
 		}catch (IOException e){
@@ -166,18 +160,22 @@ public class ProE {
 		}
 	}
 	
+	public void createNewXML(File file){
+		readXML(file);
+		clearXML();
+		updateRept();
+		saveAs(file);
+	}
+	
 	public void test(){
-		init("C:/Users/Spock/Desktop/XML/se");
+		init("C:/Users/sesa389841/Desktop/xmlfile/SE");
 		for(File file : xmlFileList){
-			clearXML(file);
-			updateRept(file);
+			System.out.println(newFileName(file));
 		}
 	}
 	
 	public static void main(String[] args) {
 		ProE proE = new ProE();
-		File xmlFile = new File("./xmlFile/NVE5471502.xml");
-		File newXMLFile = new File("./xmlFile/newXML.xml");
 		proE.test();
 
 	}
