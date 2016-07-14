@@ -12,7 +12,8 @@ public class ProE {
 	private JTextField filePath= new JTextField(26);
 	private JButton upload = new JButton("...");
 	private JButton modify = new JButton("Modify");
-	JFileChooser chooser = new JFileChooser(".");
+	JFileChooser chooser = new JFileChooser();
+	private JButton setDefault = new JButton("Set Deafult");
 	
 	private Document document;
 	private SAXReader saxReader = new SAXReader();
@@ -63,7 +64,7 @@ public class ProE {
 				String path = file.getAbsolutePath();
 				int index = path.lastIndexOf(".");
 				String fileType = path.substring(index + 1);
-				System.out.println(fileType);
+				//System.out.println(fileType);
 				if(fileType.equalsIgnoreCase("xml")){
 					xmlFileList.add(file);
 				}
@@ -81,39 +82,52 @@ public class ProE {
 		}
 	}
 	
-	public void init(String preFile){
+	public void init(){
 		
-		createXMLlist(preFile);
+		/*createXMLlist(preFile);
 		for(File file : xmlFileList){
 			readXML(file);
 			clearXML();
 			updateRept();
 			saveAs(file);
-		}
+		}*/
 		
-		/*
-		filePath.setEditable(false);
+		Properties props = new Properties();
+		try {
+			props.load(new FileInputStream(".\\xml.ini"));
+		} catch (FileNotFoundException e) {
+			File iniFile = new File("\\xml.ini");
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String path = props.getProperty("path");
+		filePath.setText(path);
+		filePath.setEditable(true);
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		JPanel jp = new JPanel();
 		jp.add(filePath);
 		jp.add(upload);
 		upload.addActionListener(event -> {
-			int result = chooser.showDialog(jf, "选择Pro/e文件");
+			int result = chooser.showDialog(jf, "OK");
 			if(result == JFileChooser.APPROVE_OPTION){
 				filePath.setText(chooser.getSelectedFile().getPath());
+				createXMLlist(filePath.getText());
 			}
 		});
 		jp.add(modify);
 		modify.addActionListener(avt ->{
 			if(filePath.getText().trim().length() > 0){
-				File xmlFile = new File(filePath.getText());
-				readXML(xmlFile);
+				for(File file : xmlFileList){
+					createNewXML(file);
+				}
 			}
 		});
 		jf.add(jp);
 		jf.setSize(600, 100);
 		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jf.setVisible(true);
-		*/
 	}
 	
 	private void updateRept(){
@@ -168,10 +182,7 @@ public class ProE {
 	}
 	
 	public void test(){
-		init("C:/Users/sesa389841/Desktop/xmlfile/SE");
-		for(File file : xmlFileList){
-			System.out.println(newFileName(file));
-		}
+		init();
 	}
 	
 	public static void main(String[] args) {
