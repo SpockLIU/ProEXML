@@ -2,6 +2,10 @@ package proE;
 
 import org.dom4j.*;
 import org.dom4j.io.*;
+
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -22,7 +26,7 @@ public class ProE {
 	private SAXReader saxReader = new SAXReader();
 	private List<File> xmlFileList = new ArrayList<>();
 	
-	private String fileLocation = "./config/xml.ini";
+	private String fileLocation = "C:/Users/xml.ini";
 	
 	private void clearXML(){
 			List list = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
@@ -93,6 +97,12 @@ public class ProE {
 			props.load(new FileInputStream(fileLocation));
 		} catch (FileNotFoundException e) {
 			File iniFile = new File(fileLocation);
+			try {
+				iniFile.createNewFile();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -106,7 +116,12 @@ public class ProE {
 		jp.add(filePath);
 		jp.add(upload);
 		upload.addActionListener(event -> {
-			chooser.setCurrentDirectory(new File(path));
+			File defaultLocation = new File("C:\\ptc\\pro_soft\\temp");
+			if(filePath.getText().trim().length() > 0){
+				defaultLocation = new File(filePath.getText().trim());
+				
+			}
+			chooser.setCurrentDirectory(defaultLocation);
 			int result = chooser.showDialog(jf, "Choose XML location");
 			if(result == JFileChooser.APPROVE_OPTION){
 				filePath.setText(chooser.getSelectedFile().getPath());
@@ -114,6 +129,7 @@ public class ProE {
 		});
 		jp.add(modify);
 		modify.addActionListener(avt ->{
+			xmlFileList.clear();
 			if(filePath.getText().trim().length() > 0){
 				createXMLlist(filePath.getText());
 				for(File file : xmlFileList){
@@ -143,6 +159,8 @@ public class ProE {
 		jf.add(jp);
 		jf.setResizable(false);
 		jf.setSize(550, 75);
+		Dimension screenSize =Toolkit.getDefaultToolkit().getScreenSize();
+		jf.setLocation((screenSize.width - jf.getWidth()) /2 , (screenSize.height -  jf.getHeight()) / 2);
 		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jf.setVisible(true);
 	}
