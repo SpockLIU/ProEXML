@@ -22,6 +22,8 @@ public class ProE {
 	private SAXReader saxReader = new SAXReader();
 	private List<File> xmlFileList = new ArrayList<>();
 	
+	private String fileLocation = "./config/xml.ini";
+	
 	private void clearXML(){
 			List list = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
 			Iterator iter = list.iterator();
@@ -44,6 +46,7 @@ public class ProE {
 						String rept = lengEle.attribute("Repetition").getValue();
 						if(symLength.equals(length) && symView.equals(lView) && symTol.equals(lTol)){
 							element.attribute("Repetition").setValue(rept);
+							break;
 						}
 						}
 					}
@@ -87,9 +90,9 @@ public class ProE {
 		
 		Properties props = new Properties();
 		try {
-			props.load(new FileInputStream(".\\xml.ini"));
+			props.load(new FileInputStream(fileLocation));
 		} catch (FileNotFoundException e) {
-			File iniFile = new File("\\xml.ini");
+			File iniFile = new File(fileLocation);
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -121,10 +124,10 @@ public class ProE {
 		jp.add(setDefault);
 		setDefault.addActionListener(event -> {
 			if(filePath.getText().trim().length() > 0){
-				System.out.println(filePath.getText());
+//				System.out.println(filePath.getText());
 				props.setProperty("path", filePath.getText());
 				try {
-					OutputStream os = new FileOutputStream("./xml.ini");
+					OutputStream os = new FileOutputStream(fileLocation);
 					props.store(os, null);
 				} catch (FileNotFoundException e) {
 					// TODO Auto-generated catch block
@@ -138,7 +141,8 @@ public class ProE {
 			
 		});
 		jf.add(jp);
-		jf.setSize(600, 100);
+		jf.setResizable(false);
+		jf.setSize(550, 75);
 		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jf.setVisible(true);
 	}
@@ -193,14 +197,11 @@ public class ProE {
 		updateRept();
 		saveAs(file);
 	}
-	
-	public void test(){
-			init();
-	}
+
 	
 	public static void main(String[] args) {
 		ProE proE = new ProE();
-		proE.test();
+		proE.init();
 
 	}
 
