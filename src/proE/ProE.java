@@ -24,7 +24,7 @@ public class ProE {
 			while(iter.hasNext()){
 				Element element =(Element) iter.next();
 				if(element.attribute("Type").getValue().equals("Sym")){
-					System.out.println(element.attribute("Name").getValue());
+//					System.out.println(element.attribute("Name").getValue());
 					Element symEle = element.getParent().element("Comments").element("Comment");	
 					String symLength = symEle.attribute("Comment").getValue().split("\\s")[0];
 					String symView = element.attribute("ViewFolio").getValue();
@@ -59,11 +59,9 @@ public class ProE {
 		}
 		if(xmlPath.isDirectory()){
 			for(File file : xmlPath.listFiles()){
-				//System.out.println(file.getAbsolutePath());
 				String path = file.getAbsolutePath();
 				int index = path.lastIndexOf(".");
 				String fileType = path.substring(index + 1);
-				System.out.println(fileType);
 				if(fileType.equalsIgnoreCase("xml")){
 					xmlFileList.add(file);
 				}
@@ -169,9 +167,7 @@ public class ProE {
 	
 	public void test(){
 		init("C:/Users/sesa389841/Desktop/xmlfile/SE");
-		for(File file : xmlFileList){
-			System.out.println(newFileName(file));
-		}
+		
 	}
 	
 	public static void main(String[] args) {
