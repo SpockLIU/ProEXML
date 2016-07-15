@@ -4,6 +4,9 @@ import org.dom4j.*;
 import org.dom4j.io.*;
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.swing.*;
 
 public class ProE {
@@ -12,7 +15,8 @@ public class ProE {
 	private JTextField filePath= new JTextField(26);
 	private JButton upload = new JButton("...");
 	private JButton modify = new JButton("Modify");
-	JFileChooser chooser = new JFileChooser(".");
+	JFileChooser chooser = new JFileChooser();
+	private JButton setDefault = new JButton("Set Deafult");
 	
 	private Document document;
 	private SAXReader saxReader = new SAXReader();
@@ -59,10 +63,17 @@ public class ProE {
 		}
 		if(xmlPath.isDirectory()){
 			for(File file : xmlPath.listFiles()){
+<<<<<<< HEAD
 				String path = file.getAbsolutePath();
 				int index = path.lastIndexOf(".");
 				String fileType = path.substring(index + 1);
 				if(fileType.equalsIgnoreCase("xml")){
+=======
+				String name = file.getName();
+				Pattern pattern = Pattern.compile("[a-z]{3}\\d{7}\\.xml", Pattern.CASE_INSENSITIVE);
+				Matcher matcher = pattern.matcher(name);
+				if(matcher.matches()){
+>>>>>>> branch 'master' of https://github.com/SpockLIU/ProEXML
 					xmlFileList.add(file);
 				}
 			}
@@ -79,23 +90,28 @@ public class ProE {
 		}
 	}
 	
-	public void init(String preFile){
+	public void init(){
 		
-		createXMLlist(preFile);
-		for(File file : xmlFileList){
-			readXML(file);
-			clearXML();
-			updateRept();
-			saveAs(file);
+		Properties props = new Properties();
+		try {
+			props.load(new FileInputStream(".\\xml.ini"));
+		} catch (FileNotFoundException e) {
+			File iniFile = new File("\\xml.ini");
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		
-		/*
-		filePath.setEditable(false);
+		String path = props.getProperty("path");
+		filePath.setText(path);
+		filePath.setEditable(true);
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		JPanel jp = new JPanel();
 		jp.add(filePath);
 		jp.add(upload);
 		upload.addActionListener(event -> {
-			int result = chooser.showDialog(jf, "选择Pro/e文件");
+			chooser.setCurrentDirectory(new File(path));
+			int result = chooser.showDialog(jf, "OK");
 			if(result == JFileChooser.APPROVE_OPTION){
 				filePath.setText(chooser.getSelectedFile().getPath());
 			}
@@ -103,15 +119,35 @@ public class ProE {
 		jp.add(modify);
 		modify.addActionListener(avt ->{
 			if(filePath.getText().trim().length() > 0){
-				File xmlFile = new File(filePath.getText());
-				readXML(xmlFile);
+				createXMLlist(filePath.getText());
+				for(File file : xmlFileList){
+					createNewXML(file);
+				}
 			}
+		});
+		jp.add(setDefault);
+		setDefault.addActionListener(event -> {
+			if(filePath.getText().trim().length() > 0){
+				System.out.println(filePath.getText());
+				props.setProperty("path", filePath.getText());
+				try {
+					OutputStream os = new FileOutputStream("./xml.ini");
+					props.store(os, null);
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+			}
+			
 		});
 		jf.add(jp);
 		jf.setSize(600, 100);
 		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jf.setVisible(true);
-		*/
 	}
 	
 	private void updateRept(){
@@ -166,8 +202,12 @@ public class ProE {
 	}
 	
 	public void test(){
+<<<<<<< HEAD
 		init("C:/Users/sesa389841/Desktop/xmlfile/SE");
 		
+=======
+		init();
+>>>>>>> branch 'master' of https://github.com/SpockLIU/ProEXML
 	}
 	
 	public static void main(String[] args) {
