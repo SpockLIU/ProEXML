@@ -11,7 +11,7 @@ import javax.swing.*;
 
 public class ProE {
 	
-	JFrame jf = new JFrame("xml转换程式");
+	JFrame jf = new JFrame("xml tool");
 	private JTextField filePath= new JTextField(26);
 	private JButton upload = new JButton("...");
 	private JButton modify = new JButton("Modify");
@@ -63,17 +63,10 @@ public class ProE {
 		}
 		if(xmlPath.isDirectory()){
 			for(File file : xmlPath.listFiles()){
-<<<<<<< HEAD
-				String path = file.getAbsolutePath();
-				int index = path.lastIndexOf(".");
-				String fileType = path.substring(index + 1);
-				if(fileType.equalsIgnoreCase("xml")){
-=======
 				String name = file.getName();
 				Pattern pattern = Pattern.compile("[a-z]{3}\\d{7}\\.xml", Pattern.CASE_INSENSITIVE);
 				Matcher matcher = pattern.matcher(name);
 				if(matcher.matches()){
->>>>>>> branch 'master' of https://github.com/SpockLIU/ProEXML
 					xmlFileList.add(file);
 				}
 			}
@@ -111,7 +104,7 @@ public class ProE {
 		jp.add(upload);
 		upload.addActionListener(event -> {
 			chooser.setCurrentDirectory(new File(path));
-			int result = chooser.showDialog(jf, "OK");
+			int result = chooser.showDialog(jf, "Choose XML location");
 			if(result == JFileChooser.APPROVE_OPTION){
 				filePath.setText(chooser.getSelectedFile().getPath());
 			}
@@ -202,12 +195,7 @@ public class ProE {
 	}
 	
 	public void test(){
-<<<<<<< HEAD
-		init("C:/Users/sesa389841/Desktop/xmlfile/SE");
-		
-=======
-		init();
->>>>>>> branch 'master' of https://github.com/SpockLIU/ProEXML
+			init();
 	}
 	
 	public static void main(String[] args) {
