@@ -20,43 +20,73 @@ public class ProE {
 	private JButton upload = new JButton("...");
 	private JButton modify = new JButton("Modify");
 	JFileChooser chooser = new JFileChooser();
-	private JButton setDefault = new JButton("Set Deafult");
+	private JButton setDefault = new JButton("Set Default");
 	
 	private Document document;
 	private SAXReader saxReader = new SAXReader();
 	private List<File> xmlFileList = new ArrayList<>();
+	private List<Element> dimList = new ArrayList<>();
 	
-	private String fileLocation = "C:/Users/xml.ini";
+	private String fileLocation = "d:/xml.ini";
 	
 	private void clearXML(){
-			List list = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
-			Iterator iter = list.iterator();
+//			List list = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
+			String symLength = null;
+			String symView = null;
+			String symTol = null;
+			Iterator iter = dimList.iterator();
 			while(iter.hasNext()){
-				Element element =(Element) iter.next();
-				if(element.attribute("Type").getValue().equals("Sym")){
-//					System.out.println(element.attribute("Name").getValue());
-					Element symEle = element.getParent().element("Comments").element("Comment");	
-					String symLength = symEle.attribute("Comment").getValue().split("\\s")[0];
-					String symView = element.attribute("ViewFolio").getValue();
-					String symTol = symEle.attribute("Comment").getValue().split("\\s")[1].split("-")[1];
-					List simList = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
-					Iterator simIter = simList.iterator();
-					while(simIter.hasNext()){
-						Element lengEle = (Element) simIter.next();
-						if(lengEle.attribute("Type").getValue().equals("Sim")){
-						String length = lengEle.attribute("Nominal").getValue();
-						String lView = lengEle.attribute("ViewFolio").getValue();
-						String lTol = lengEle.attribute("TolUpper").getValue();
-						String rept = lengEle.attribute("Repetition").getValue();
-						if(symLength.equals(length) && symView.equals(lView) && symTol.equals(lTol)){
-							element.attribute("Repetition").setValue(rept);
-							break;
-						}
+				Element ele =(Element) iter.next();
+				symView = ele.element("TolerancedDimInfos").attribute("ViewFolio").getValue();
+				List<Element> comment = ele.element("Comments").elements("Comment");
+				for(Element e : comment){
+					String refDim = e.attribute("Comment").getValue();
+//					System.out.println(refDim);
+					if(refDim.contains("+-")){
+						symLength = refDim.split("\\s\\+-")[0];
+						symTol = refDim.split("\\s\\+-")[1];
+//						System.out.println(symLength);
+//						System.out.println(symTol);
+//						System.out.println(symView);
+					}
+				}
+				List simList = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
+				Iterator simIter = simList.iterator();
+				while(simIter.hasNext()){
+					Element lengEle = (Element) simIter.next();
+					if(lengEle.attribute("Type").getValue().equals("Sim") || lengEle.attribute("Type").getValue().equals("Psi")){
+					String length = lengEle.attribute("Nominal").getValue();
+					String lView = lengEle.attribute("ViewFolio").getValue();
+					String lTol = lengEle.attribute("TolUpper").getValue();
+					String rept = lengEle.attribute("Repetition").getValue();
+//					System.out.println(length + "\t" + lTol + "\t" + lView + "\t" + rept);
+					if(symLength.equals(length) && symView.equals(lView) && symTol.equals(lTol)){
+//						System.out.println(length + "\t" + rept);
+						ele.element("TolerancedDimInfos").attribute("Repetition").setValue(rept);
+						break;
 						}
 					}
 				}
 			}
 		
+	}
+	
+	public void findDim(){
+		List list = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim");
+		Iterator iter = list.iterator();
+		while(iter.hasNext()){
+			Element ele = (Element) iter.next();
+			List comment = ele.element("Comments").elements("Comment");
+			Iterator comIter = comment.iterator();
+			while(comIter.hasNext()){
+				Element comEle = (Element) comIter.next();
+				if(comEle.attribute("Comment").getValue().contains("+-")){
+					dimList.add(ele);
+//					System.out.println(ele.element("TolerancedDimInfos").attribute("Name").getValue());
+//					System.out.println(comEle.attribute("Comment").getValue());
+				}
+			}
+		}
 	}
 	
 	public void createXMLlist(String preFile){
@@ -166,7 +196,7 @@ public class ProE {
 	}
 	
 	private void updateRept(){
-			List list = document.selectNodes("//ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
+			List list = document.selectNodes("/ProEngData/TolerancedDims/TolerancedDim/TolerancedDimInfos");
 			for(int i = list.size() - 1; i >=0; i--){
 				Element element = (Element) list.get(i);
 				Attribute name = element.attribute("Name");
@@ -211,6 +241,7 @@ public class ProE {
 	
 	public void createNewXML(File file){
 		readXML(file);
+		findDim();
 		clearXML();
 		updateRept();
 		saveAs(file);
@@ -220,6 +251,13 @@ public class ProE {
 	public static void main(String[] args) {
 		ProE proE = new ProE();
 		proE.init();
+//		File xmlFile = new File("C:/Users/Spock/Desktop/XML/SE/NVE4984102.xml");
+//		proE.readXML(xmlFile);
+//		proE.findDim();
+//		proE.clearXML();
+//		proE.updateRept();
+//		proE.saveAs(xmlFile);
+	
 
 	}
 
